@@ -1,26 +1,20 @@
 import numpy.random as npr
-from markov_updater import MarkovUpdater
+from updater import Updater
 
 
 class Generator:
-    def __init__(self, words,
-                 steps=[2, 3, 4],
-                 no_aliases=False,
-                 length_control=False):
+    def __init__(self, words, steps=[2,3,4]):
         self.mus = list()
         for step in steps:
-            mu = MarkovUpdater(words, step)
-            mu.main_update()
+            mu = Updater(step)
+            mu.main_update(words)
             self.mus.append(mu)
 
         self.words = words
-        self.no_aliases = no_aliases
-        self.length_control = length_control
-        if self.length_control:
-            self.max_length = max(map(len, self.words))
-            self.min_length = min(map(len, self.words))
+        self.max_length = max(map(len, self.words))
+        self.min_length = min(map(len, self.words))
 
-    def generate(self):
+    def generate(self, no_aliases=True, length_control=True):
         keys = dict()
 
         curr = npr.choice(self.mus)
@@ -37,9 +31,9 @@ class Generator:
             key = keys[curr]
 
         word = s[:-1]
-        if self.no_aliases and word in self.words:
+        if no_aliases and word in self.words:
             word = self.generate()
-        elif self.length_control:
+        elif length_control:
             cond = self.min_length <= len(word) <= self.max_length
             if not cond:
                 word = self.generate()
